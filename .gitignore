@@ -1,0 +1,12 @@
+/.vscode
+/graph/*.pdf
+/graph/*.gif
+/data/image-*.dat
+/data/gradient.dat
+/*.o
+/MNIST/mnist*
+/MNIST/readme.txt
+/main
+/gen
+/*.pdf
+/.DS_Store

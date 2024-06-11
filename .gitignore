@@ -1,7 +1,7 @@
 /.vscode
 /graph/*.pdf
 /graph/*.gif
-/data/image-*.dat
+/data/image*.dat
 /data/gradient.dat
 /data/param.dat
 /*.o

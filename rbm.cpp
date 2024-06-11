@@ -248,7 +248,7 @@ void RBM::dataGen(int num){
 }
 
 // データを生成する関数
-void RBM::dataGen_MNIST(int num){
+void RBM::dataGen_MNIST(int num, int number){
     int i, j, k;
     char filename[100];
     FILE *datafile;
@@ -266,7 +266,7 @@ void RBM::dataGen_MNIST(int num){
             update_h();
         }
 
-        snprintf(filename, sizeof(filename), "./data/image-%d.dat", k);
+        snprintf(filename, sizeof(filename), "./data/image%d-%d.dat", number, k);
         datafile = fopen(filename, "w");
         for(i=0;i<v.size();i++){
             fprintf(datafile, "%d ", v[i]);
@@ -662,10 +662,12 @@ void RBM::setV(int num){
     }
 }
 
-void RBM::paramOutput(){
+void RBM::paramOutput(int number){
     int i, j;
+    char filename[100];
     FILE *p;
-    p = fopen("./data/param.dat", "w");
+    snprintf(filename, sizeof(filename), "./data/param%d.dat", number);
+    p = fopen(filename, "w");
     if (p == NULL) {
         perror("Error opening p");
         return;
@@ -696,11 +698,13 @@ void RBM::paramOutput(){
     fclose(p);
 }
 
-void RBM::paramInput(){
+void RBM::paramInput(int number){
     int i, j;
     int v_num, h_num;
+    char filename[100];
     FILE *p;
-    p = fopen("./data/param.dat", "r");
+    snprintf(filename, sizeof(filename), "./data/param%d.dat", number);
+    p = fopen(filename, "r");
     if (p == NULL) {
         perror("Error opening p");
         return;

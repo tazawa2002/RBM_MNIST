@@ -20,15 +20,15 @@ class RBM {
         void update_h();
         void sampling(int num);
         void dataGen(int num);
-        void dataGen_MNIST(int num);
+        void dataGen_MNIST(int num, int number);
         void dataRead(int num);
         void dataRead_MNIST(int num, int number);
         void train(int epoch);
         void train_sampling(int epoch, int num);
         int traindatanum;
         vector< vector<int> > traindata;
-        void paramOutput();
-        void paramInput();
+        void paramOutput(int number);
+        void paramInput(int number);
         void paramPrint();
 
         int vStates;

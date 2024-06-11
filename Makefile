@@ -9,6 +9,9 @@ main.o: main.cpp rbm.h
 gen: gen.o rbm.o
 	g++ -o gen gen.o rbm.o
 
+gen.o: gen.cpp rbm.h
+	g++ -c gen.cpp
+
 rbm.o: rbm.cpp rbm.h
 	g++ -c rbm.cpp
 

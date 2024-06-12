@@ -4,10 +4,14 @@
 int main(int argc, char *argv[]){
     int v_num = 28*28;
     int h_num = 600;
-    int epoch = 100;
-    int sampling_num = 1000;
+    int epoch = 1000;
+    int sampling_num = 100;
     int number;
     RBM rbm(v_num, h_num);
+    rbm.setAnimeteType(RBM::AnimeteType::none);
+    rbm.setTrainType(RBM::TrainType::sampling);
+    rbm.setSamplingNum(sampling_num);
+    rbm.setGradientType(RBM::GradientType::adam);
 
     if(argc > 1){
         number = atoi(argv[1]);
@@ -23,7 +27,7 @@ int main(int argc, char *argv[]){
     printf("end read data\n");
 
     printf("start train\n");
-    rbm.train_sampling(epoch, sampling_num);
+    rbm.train(epoch);
     printf("end train\n");
 
     rbm.paramOutput(number);

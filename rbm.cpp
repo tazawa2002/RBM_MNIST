@@ -275,8 +275,11 @@ void RBM::dataGen_MNIST(int num, int number){
             if(i%28==27) fprintf(datafile, "\n");
         }
         fclose(datafile);
+        printf("\rmake %s", filename);
+        fflush(stdout);
     }
     fclose(datafile);
+    printf("\n");
 }
 
 // データを読み込む関数

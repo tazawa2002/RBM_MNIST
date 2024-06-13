@@ -19,15 +19,12 @@ class RBM {
         void update_h();
         void sampling(int num);
         void dataGen(int num);
-        void dataGen_MNIST(int num, int number);
         void dataRead(int num);
-        void dataRead_MNIST(int num, int number);
         void train(int epoch);
-        void train_sampling(int epoch, int num);
         int traindatanum;
         vector< vector<int> > traindata;
-        void paramOutput(int number);
-        void paramInput(int number);
+        void paramOutput();
+        void paramInput();
         void paramPrint();
         enum class TrainType {
             exact,
@@ -64,7 +61,7 @@ class RBM {
         vector<double> p_distr_v;
         vector<int> histgram;
         vector<int> histgram_v;
-    private:
+    protected:
         vector<int> v;
         vector<int> h;
         vector<double> b;

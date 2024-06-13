@@ -1,13 +1,13 @@
-#include "rbm.h"
+#include "rbm_mnist.h"
 #include <stdio.h>
 
 int main(int argc, char *argv[]){
     int v_num = 28*28;
     int h_num = 600;
     int epoch = 1000;
-    int sampling_num = 100;
+    int sampling_num = 10;
     int number;
-    RBM rbm(v_num, h_num);
+    RBM_MNIST rbm(v_num, h_num);
     rbm.setAnimeteType(RBM::AnimeteType::none);
     rbm.setTrainType(RBM::TrainType::sampling);
     rbm.setSamplingNum(sampling_num);
@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
         scanf("%d", &number);
     }
 
-    rbm.paramInput(number);
+    rbm.paramInput_MNIST(number);
 
     printf("start read data\n");
     rbm.dataRead_MNIST(5000, number);
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
     rbm.train(epoch);
     printf("end train\n");
 
-    rbm.paramOutput(number);
+    rbm.paramOutput_MNIST(number);
     printf("out param.dat\n");
 
 

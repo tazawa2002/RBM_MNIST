@@ -1,5 +1,6 @@
 #include "rbm.h"
 
+// コンストラクタ
 RBM::RBM(int v_num, int h_num){
     train_type = TrainType::sampling;
     gradient_type = GradientType::nomal;
@@ -249,39 +250,6 @@ void RBM::dataGen(int num){
     fclose(datafile);
 }
 
-// データを生成する関数
-void RBM::dataGen_MNIST(int num, int number){
-    int i, j, k;
-    char filename[100];
-    FILE *datafile;
-
-    // バーンイン時間
-    for(i=0;i<10000;i++){
-        update_v();
-        update_h();
-    }
-
-    // データ生成のループ
-    for(k=0;k<num;k++){
-        for(j=0;j<10;j++){
-            update_v();
-            update_h();
-        }
-
-        snprintf(filename, sizeof(filename), "./data/image%d-%d.dat", number, k);
-        datafile = fopen(filename, "w");
-        for(i=0;i<v.size();i++){
-            fprintf(datafile, "%d ", v[i]);
-            if(i%28==27) fprintf(datafile, "\n");
-        }
-        fclose(datafile);
-        printf("\rmake %s", filename);
-        fflush(stdout);
-    }
-    fclose(datafile);
-    printf("\n");
-}
-
 // データを読み込む関数
 void RBM::dataRead(int num){
     int i, k, x;
@@ -291,7 +259,7 @@ void RBM::dataRead(int num){
     for(i=0;i<traindatanum;i++){
         traindata[i].resize(v.size());
     }
-    datafile = fopen("./MNIST/train0.dat", "r");
+    datafile = fopen("./data/data.dat", "r");
     for(k=0;k<traindatanum;k++){
         for(i=0;i<v.size();i++){
             fscanf(datafile, "%d", &x);
@@ -299,29 +267,6 @@ void RBM::dataRead(int num){
         }
     }
     fclose(datafile);
-}
-
-void RBM::dataRead_MNIST(int num, int number){
-    int i, k, x;
-    char filename[100];
-    FILE *datafile;
-    traindatanum = num;
-    traindata.resize(traindatanum);
-    for(i=0;i<traindatanum;i++){
-        traindata[i].resize(v.size());
-    }
-    snprintf(filename, sizeof(filename), "./MNIST/train%d.dat", number);
-    datafile = fopen(filename, "r");
-    for(k=0;k<traindatanum;k++){
-        for(i=0;i<v.size();i++){
-            fscanf(datafile, "%d", &x);
-            traindata[k][i] = x;
-        }
-    }
-    fclose(datafile);
-    for(i=0;i<v.size();i++){
-        v[i] = traindata[0][i];
-    }
 }
 
 void RBM::train(int epoch){
@@ -362,9 +307,7 @@ void RBM::train(int epoch){
     }
 
     // 訓練データの期待値を計算
-    printf("start batch\n");
     data_expectation();
-    printf("end batch\n");
 
     std::cout << "\e[?25l"; // カーソルを非表示
     while(loop_time < epoch){
@@ -420,11 +363,14 @@ void RBM::train(int epoch){
 
         // 勾配を出力
         std::cout << "\r" << loop_time << ": " << gradient;
-        if(loop_time%1 == 0) fflush(stdout);
+        if(train_type == TrainType::sampling) fflush(stdout);
+        else if(loop_time%100==0) fflush(stdout);
     }
     std::cout << "\e[?25h" << endl; // カーソルの再表示
-    fflush(p);
-    fclose(p);
+    if(p!=NULL){
+        fflush(p);
+        fclose(p);
+    }
 }
 
 void RBM::train_anime(int loop_time, int skip){
@@ -499,7 +445,7 @@ void RBM::sampling_expectation(int num){
         }
     }
 
-    for(k=0;k<0;k++){
+    for(k=0;k<10;k++){
         update_v();
         update_h();
     }
@@ -847,12 +793,10 @@ void RBM::setV(int num){
     }
 }
 
-void RBM::paramOutput(int number){
+void RBM::paramOutput(){
     int i, j;
-    char filename[100];
     FILE *p;
-    snprintf(filename, sizeof(filename), "./data/param%d.dat", number);
-    p = fopen(filename, "w");
+    p = fopen("./data/param.dat", "w");
     if (p == NULL) {
         perror("Error opening p");
         return;
@@ -883,13 +827,11 @@ void RBM::paramOutput(int number){
     fclose(p);
 }
 
-void RBM::paramInput(int number){
+void RBM::paramInput(){
     int i, j;
     int v_num, h_num;
-    char filename[100];
     FILE *p;
-    snprintf(filename, sizeof(filename), "./data/param%d.dat", number);
-    p = fopen(filename, "r");
+    p = fopen("./data/param.dat", "r");
     if (p == NULL) {
         perror("Error opening p");
         return;

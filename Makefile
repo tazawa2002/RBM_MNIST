@@ -2,24 +2,26 @@ CXXFLAGS = -std=c++11
 
 all: main gen
 
-main: main.o rbm.o
-	g++ -o main main.o rbm.o $(CXXFLAGS)
+main: main.o rbm.o rbm_mnist.o
+	g++ -o main main.o rbm.o rbm_mnist.o $(CXXFLAGS)
 
-main.o: main.cpp rbm.h
+main.o: main.cpp rbm.h rbm_mnist.h
 	g++ -c main.cpp $(CXXFLAGS)
 
-gen: gen.o rbm.o
-	g++ -o gen gen.o rbm.o $(CXXFLAGS)
+gen: gen.o rbm.o rbm_mnist.o
+	g++ -o gen gen.o rbm.o rbm_mnist.o $(CXXFLAGS)
 
-gen.o: gen.cpp rbm.h
+gen.o: gen.cpp rbm.h rbm_mnist.h
 	g++ -c gen.cpp $(CXXFLAGS)
 
 rbm.o: rbm.cpp rbm.h
 	g++ -c rbm.cpp $(CXXFLAGS)
 
+rbm_mnist.o: rbm_mnist.cpp rbm_mnist.h rbm.h
+	g++ -c rbm_mnist.cpp $(CXXFLAGS)
+
 clean:
-	rm main.o main gen.o gen rbm.o
+	rm -f main.o main gen.o gen rbm.o rbm_mnist.o
 
 dataclean:
-	rm ./data/image-*.dat
-
+	rm -f ./data/image-*.dat

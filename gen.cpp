@@ -1,7 +1,7 @@
-#include "rbm.h"
+#include "rbm_mnist.h"
 
 int main(int argc, char *argv[]){
-    RBM rbm(28*28,600);
+    RBM_MNIST rbm(28*28,600);
     int num = 200;
     int number;
     if(argc > 1){
@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
     }
 
     rbm.dataRead_MNIST(1, number);
-    rbm.paramInput(number);
+    rbm.paramInput_MNIST(number);
     printf("end param read\n");
     rbm.dataGen_MNIST(num, number);
     printf("end data gen\n");

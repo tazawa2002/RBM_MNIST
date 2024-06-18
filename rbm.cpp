@@ -373,6 +373,123 @@ void RBM::train(int epoch){
     }
 }
 
+void RBM::trainMiniBatch(int epoch, int mini_batch_size){
+    int i,j;
+    int loop_time = 0;
+    double learn_rate = 0.01;
+    double gradient;
+    int num_batchs = traindatanum / mini_batch_size;
+
+    TrainType train_type = this->train_type;
+    GradientType gradient_type = this->gradient_type;
+    AnimeteType animete_type = this->animete_type;
+    gradient_b.resize(v.size());
+    gradient_c.resize(h.size());
+    gradient_w.resize(v.size());
+    for(i=0;i<v.size();i++){
+        gradient_w[i].resize(h.size());
+    }
+    for(i=0;i<v.size();i++){
+        gradient_b[i] = 0;
+    }
+    for(j=0;j<h.size();j++){
+        gradient_c[j] = 0;
+    }
+    for(i=0;i<v.size();i++){
+        for(j=0;j<h.size();j++){
+            gradient_w[i][j] = 0;
+        }
+    }
+
+    FILE *p = NULL;
+    if(animete_type == AnimeteType::anime){
+        // 対数尤度関数の出力ファイルの準備
+        p = fopen("./data/log_likelihood.dat", "w");
+        if(p == NULL){
+            perror("Error opening log_likelihood.dat");
+            exit(1);
+        }
+    }
+
+    // 乱数生成器を設定
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine engine(seed);
+    vector<int> index(traindatanum); // index配列の初期化
+    iota(index.begin(), index.end(), 0); // index配列の中身を0からtraindatanum-1までの数字で埋める
+
+    std::cout << "\e[?25l"; // カーソルを非表示
+    while(loop_time < epoch){
+        shuffle(index.begin(), index.end(), engine); // インデックスをシャッフル
+
+        for(int batch_index = 0; batch_index < num_batchs; batch_index++){
+            int start_index = batch_index*mini_batch_size;
+            int end_index = start_index + mini_batch_size;
+
+            if(gradient_type != GradientType::nesterov){
+                if (train_type == TrainType::exact) {
+                    exact_expectation();
+                } else if (train_type == TrainType::sampling) {
+                    sampling_expectation(sampling_num);
+                }
+            }
+
+            if(animete_type == AnimeteType::anime){
+                train_anime(loop_time*num_batchs+batch_index, 50);
+                fprintf(p, "%d %lf\n", loop_time*num_batchs+batch_index, log_likelihood());
+            }
+            
+            data_expectation(index, start_index, end_index);
+
+            // 勾配の計算
+            if(gradient_type == GradientType::nomal){
+                gradient_nomal(learn_rate);
+            }else if(gradient_type == GradientType::momentum){
+                gradient_momentum(learn_rate);
+            }else if(gradient_type == GradientType::nesterov){
+                gradient_nesterov(learn_rate);
+            }else if(gradient_type == GradientType::adagrad){
+                gradient_adagrad(learn_rate);
+            }else if(gradient_type == GradientType::rmsprop){
+                gradient_rmsprop(learn_rate);
+            }else if(gradient_type == GradientType::adadelta){
+                gradient_adadelta(learn_rate);
+            }else if(gradient_type == GradientType::adam){
+                gradient_adam(learn_rate, loop_time);
+            }
+
+            // パラメータの更新
+            gradient = 0;
+            for(i=0;i<v.size();i++){
+                gradient += gradient_b[i]*gradient_b[i];
+                b[i] += gradient_b[i];
+            }
+
+            for(j=0;j<h.size();j++){
+                gradient += gradient_c[j]*gradient_c[j];
+                c[j] += gradient_c[j];
+            }
+
+            for(i=0;i<v.size();i++){
+                for(j=0;j<h.size();j++){
+                    gradient += gradient_w[i][j]*gradient_w[i][j];
+                    W[i][j] += gradient_w[i][j];
+                }
+            }
+            gradient = sqrt(gradient);
+            // 勾配を出力
+            std::cout << "\repoch: " << loop_time << ", batch: " << batch_index << ", gradient: " << gradient;
+            if(train_type == TrainType::sampling) fflush(stdout);
+            else if(loop_time%100==0) fflush(stdout);
+        }
+        loop_time++;
+    }
+    std::cout << "\e[?25h" << endl; // カーソルの再表示
+    if(p!=NULL){
+        fflush(p);
+        fclose(p);
+    }
+}
+
 void RBM::train_anime(int loop_time, int skip){
     // アニメーション用のファイルを出力
     int i;
@@ -519,6 +636,55 @@ void RBM::data_expectation(){
                 Evh_data[i][j] += traindata[k][i]*sig_lambda[k];
             }
             Evh_data[i][j] /= traindatanum;
+        }
+    }
+}
+
+void RBM::data_expectation(const vector<int>& index, int start_index, int end_index){
+    int i, j, k, l;
+    double lambda;
+    int batch_size = end_index - start_index;
+    vector<double> sig_lambda;
+    sig_lambda.resize(batch_size);
+
+    for(i=0;i<v.size();i++){
+        Ev_data[i] = 0;
+    }
+    for(j=0;j<h.size();j++){
+        Eh_data[j] = 0;
+        for(i=0;i<v.size();i++){
+            Evh_data[i][j] = 0;
+        }
+    }
+
+    for(k=0;k<batch_size;k++){
+        int data_index = index[start_index + k];
+
+        for(i=0;i<v.size();i++){
+            Ev_data[i] += traindata[data_index][i];
+        }
+
+        for(j=0;j<h.size();j++){
+            lambda = c[j];
+            for(i=0;i<v.size();i++){
+                lambda += W[i][j]*traindata[data_index][i];
+            }
+            sig_lambda[k] = sig(lambda);
+            Eh_data[j] += sig_lambda[k];
+
+            for(i=0;i<v.size();i++){
+                Evh_data[i][j] += traindata[data_index][i]*sig_lambda[k];
+            }
+        }
+    }
+
+    for(i=0;i<v.size();i++){
+        Ev_data[i] /= batch_size;
+    }
+    for(j=0;j<h.size();j++){
+        Eh_data[j] /= batch_size;
+        for(i=0;i<v.size();i++){
+            Evh_data[i][j] /= batch_size;
         }
     }
 }

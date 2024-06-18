@@ -3,6 +3,12 @@
 #include <vector>
 #include <random>
 #include <cmath>
+#include <numeric>  // std::iotaのために必要
+#include <algorithm> // std::random_shuffleのために必要
+#include <chrono>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
 #include <stdio.h>
 
 using namespace std;
@@ -21,6 +27,7 @@ class RBM {
         void dataGen(int num);
         void dataRead(int num);
         void train(int epoch);
+        void trainMiniBatch(int epoch, int mini_batch_size);
         int traindatanum;
         vector< vector<int> > traindata;
         void paramOutput();
@@ -82,6 +89,7 @@ class RBM {
         void exact_expectation();
         void sampling_expectation(int num);
         void data_expectation();
+        void data_expectation(const vector<int>& index, int start_index, int end_index);
         void gradient_nomal(double learn_rate);
         void gradient_momentum(double learn_rate);
         void gradient_nesterov(double learn_rate);

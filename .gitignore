@@ -2,6 +2,7 @@
 /graph/*.pdf
 /graph/*.gif
 /data/image*.dat
+/data/param*-*.dat
 /data/gradient.dat
 /data/param.dat
 /*.o

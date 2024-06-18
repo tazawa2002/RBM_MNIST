@@ -10,6 +10,7 @@ public:
     void dataRead_MNIST(int num, int number);
     void paramOutput_MNIST(int number);
     void paramInput_MNIST(int number);
+    void paramOutput_IMAGE(int number, int num);
 };
 
 #endif

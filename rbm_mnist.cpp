@@ -125,3 +125,26 @@ void RBM_MNIST::paramInput_MNIST(int number){
     }
     fclose(p);
 }
+
+void RBM_MNIST::paramOutput_IMAGE(int number, int num){
+    int i, j;
+    char filename[100];
+    FILE *datafile;
+
+    // パラメータWの出力
+    for(j=0;j<h.size() && j<num;j++){
+        snprintf(filename, sizeof(filename), "./data/param%d-%d.dat", number, j);
+        datafile = fopen(filename, "w");
+        if (datafile == NULL) {
+            perror("Error opening image param file");
+            return;
+        }
+        for(i=0;i<v.size();i++){
+            fprintf(datafile, "%lf ", W[i][j]);
+            if(i%28==27) fprintf(datafile, "\n");
+        }
+        fclose(datafile);
+        printf("\rmake %s", filename);
+        fflush(stdout);
+    }
+}

@@ -16,6 +16,7 @@ int main(int argc, char *argv[]){
     printf("end param read\n");
     rbm.dataGen_MNIST(num, number);
     printf("end data gen\n");
+    rbm.paramOutput_IMAGE(number, 600);
 
     return 0;
 }

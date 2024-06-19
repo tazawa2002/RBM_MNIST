@@ -1,6 +1,6 @@
 CXXFLAGS = -std=c++11
 
-all: main gen
+all: main gen gen2
 
 main: main.o rbm.o rbm_mnist.o
 	g++ -o main main.o rbm.o rbm_mnist.o $(CXXFLAGS)
@@ -13,6 +13,12 @@ gen: gen.o rbm.o rbm_mnist.o
 
 gen.o: gen.cpp rbm.h rbm_mnist.h
 	g++ -c gen.cpp $(CXXFLAGS)
+
+gen2: gen2.o rbm.o rbm_mnist.o
+	g++ -o gen2 gen2.o rbm.o rbm_mnist.o $(CXXFLAGS)
+
+gen2.o: gen2.cpp rbm.h rbm_mnist.h
+	g++ -c gen2.cpp $(CXXFLAGS)
 
 rbm.o: rbm.cpp rbm.h
 	g++ -c rbm.cpp $(CXXFLAGS)

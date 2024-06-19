@@ -4,7 +4,7 @@
 int main(int argc, char *argv[]){
     int v_num = 28*28;
     int h_num = 600;
-    int epoch = 1000;
+    int epoch = 20;
     int sampling_num = 10;
     int number;
     RBM_MNIST rbm(v_num, h_num);
@@ -23,11 +23,11 @@ int main(int argc, char *argv[]){
     rbm.paramInput_MNIST(number);
 
     printf("start read data\n");
-    rbm.dataRead_MNIST(5000, number);
+    rbm.dataRead_MNIST(60000, number);
     printf("end read data\n");
 
     printf("start train\n");
-    rbm.train(epoch);
+    rbm.trainMiniBatch(epoch, 200);
     printf("end train\n");
 
     rbm.paramOutput_MNIST(number);

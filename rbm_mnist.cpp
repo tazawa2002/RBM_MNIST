@@ -32,6 +32,38 @@ void RBM_MNIST::dataGen_MNIST(int num, int number){
     printf("\n");
 }
 
+// データを生成する関数
+void RBM_MNIST::dataGen_MNIST2(int num, int number){
+    int i, j, k;
+    char filename[100];
+    FILE *datafile;
+
+    // バーンイン時間
+    for(i=0;i<0;i++){
+        update_v();
+        update_h();
+    }
+
+    // データ生成のループ
+    for(k=0;k<num;k++){
+        for(j=0;j<10;j++){
+            update_v();
+            update_h();
+        }
+
+        snprintf(filename, sizeof(filename), "./data/image%3d-%d.dat", number, k);
+        datafile = fopen(filename, "w");
+        for(i=0;i<v.size();i++){
+            fprintf(datafile, "%d ", v[i]);
+            if(i%28==27) fprintf(datafile, "\n");
+        }
+        fclose(datafile);
+        printf("\rmake %s", filename);
+        fflush(stdout);
+    }
+    printf("\n");
+}
+
 void RBM_MNIST::dataRead_MNIST(int num, int number){
     int i, k, x;
     char filename[100];

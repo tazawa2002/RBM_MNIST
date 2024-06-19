@@ -8,6 +8,7 @@ public:
     RBM_MNIST(int v_num, int h_num) : RBM(v_num, h_num){};
     void dataGen_MNIST(int num, int number);
     void dataRead_MNIST(int num, int number);
+    void dataGen_MNIST2(int num, int number);
     void paramOutput_MNIST(int number);
     void paramInput_MNIST(int number);
     void paramOutput_IMAGE(int number, int num);

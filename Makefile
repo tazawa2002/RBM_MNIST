@@ -1,4 +1,4 @@
-CXXFLAGS = -std=c++11
+CXXFLAGS = -std=c++11 -O2
 
 all: main gen gen2
 
@@ -27,7 +27,7 @@ rbm_mnist.o: rbm_mnist.cpp rbm_mnist.h rbm.h
 	g++ -c rbm_mnist.cpp $(CXXFLAGS)
 
 clean:
-	rm -f main.o main gen.o gen rbm.o rbm_mnist.o
+	rm -f main.o main gen.o gen rbm.o rbm_mnist.o gen2.o gen2
 
 dataclean:
-	rm -f ./data/image-*.dat
+	rm -f ./data/image*-*.dat

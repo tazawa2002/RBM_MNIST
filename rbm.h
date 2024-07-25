@@ -35,7 +35,8 @@ class RBM {
         void paramPrint();
         enum class TrainType {
             exact,
-            sampling
+            sampling,
+            mean_field
         };
         enum class GradientType {
             nomal,
@@ -88,6 +89,7 @@ class RBM {
         double sig(double x);
         void exact_expectation();
         void sampling_expectation(int num);
+        void mean_field_expectation();
         void data_expectation();
         void data_expectation(const vector<int>& index, int start_index, int end_index);
         void gradient_nomal(double learn_rate);
@@ -97,6 +99,7 @@ class RBM {
         void gradient_rmsprop(double learn_rate);
         void gradient_adadelta(double learn_rate);
         void gradient_adam(double learn_rate, int loop_time);
+        void sampling_anime(int loop_time, int skip);
         void train_anime(int loop_time, int skip);
 
         void print();

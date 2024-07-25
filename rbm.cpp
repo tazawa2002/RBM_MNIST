@@ -177,6 +177,26 @@ void RBM::sampling(int num){
             update_h();
         }
         histgram_v[stateV()] += 1;
+        sampling_anime(i, 10);
+    }
+}
+
+void RBM::sampling_anime(int loop_time, int skip){
+    // アニメーション用のファイルを出力
+    int i;
+    char filename[100];
+    FILE *p;
+    if(loop_time%skip == 0){
+        snprintf(filename, sizeof(filename), "./data/sampling-%03d.dat", loop_time/skip);
+        p = fopen(filename, "w");
+        if (p != NULL) {
+            for(i=0;i<vStates;i++){
+                fprintf(p, "%d %d\n", i, histgram_v[i]);
+            }
+            fclose(p);
+        } else {
+            perror("Error opening p");
+        }
     }
 }
 
@@ -308,7 +328,7 @@ void RBM::train(int epoch){
 
     // 訓練データの期待値を計算
     data_expectation();
-
+    
     std::cout << "\e[?25l"; // カーソルを非表示
     while(loop_time < epoch){
         if(gradient_type != GradientType::nesterov){
@@ -316,10 +336,12 @@ void RBM::train(int epoch){
                 exact_expectation();
             } else if (train_type == TrainType::sampling) {
                 sampling_expectation(sampling_num);
+            } else if (train_type == TrainType::mean_field){
+                mean_field_expectation();
             }
         }
         if(animete_type == AnimeteType::anime){
-            train_anime(loop_time, 50);
+            train_anime(loop_time, 10);
             fprintf(p, "%d %lf\n", loop_time, log_likelihood());
         }
 
@@ -430,6 +452,8 @@ void RBM::trainMiniBatch(int epoch, int mini_batch_size){
                     exact_expectation();
                 } else if (train_type == TrainType::sampling) {
                     sampling_expectation(sampling_num);
+                } else if (train_type == TrainType::mean_field){
+                    mean_field_expectation();
                 }
             }
 
@@ -562,13 +586,13 @@ void RBM::sampling_expectation(int num){
         }
     }
 
-    for(k=0;k<10;k++){
-        update_v();
+    for(k=0;k<traindatanum;k++){
+        for(l=0;l<v.size();l++){
+            v[l] = traindata[k][l];
+        }
         update_h();
-    }
 
-    for(k=0;k<num;k++){
-        for(l=0;l<1;l++) {
+        for(l=0;l<5;l++){
             update_v();
             update_h();
         }
@@ -589,14 +613,61 @@ void RBM::sampling_expectation(int num){
 
     // データ数で割る
     for(i=0;i<v.size();i++){
-        Ev[i] /= num;
+        Ev[i] /= traindatanum;
     }
     for(j=0;j<h.size();j++){
-        Eh[j] /= num;
+        Eh[j] /= traindatanum;
     }
     for(i=0;i<v.size();i++){
         for(j=0;j<h.size();j++){
-            Evh[i][j] /= num;
+            Evh[i][j] /= traindatanum;
+        }
+    }
+}
+
+void RBM::mean_field_expectation(){
+    int i, j;
+    vector<double> v_mean(v.size()); // 可視層の平均場近似初期値
+    vector<double> h_mean(h.size()); // 隠れ層の平均場近似初期値
+
+    for(i=0;i<v_mean.size();i++){
+        v_mean[i] = random_num();
+    }
+    for(j=0;j<h_mean.size();j++){
+        h_mean[j] = random_num();
+    }
+
+    // 平均場近似の反復計算
+    for (int iter = 0; iter < 10000; iter++) {
+        // 可視層の平均を更新
+        for (i = 0; i < v.size(); i++) {
+            double sum = -b[i];
+            for (j = 0; j < h.size(); j++) {
+                sum -= W[i][j] * h_mean[j];
+            }
+            v_mean[i] = sig(sum);
+        }
+
+        // 隠れ層の平均を更新
+        for (j = 0; j < h.size(); j++) {
+            double sum = -c[j];
+            for (i = 0; i < v.size(); i++) {
+                sum -= W[i][j] * v_mean[i];
+            }
+            h_mean[j] = sig(sum);
+        }
+    }
+
+    // 平均場近似による期待値の計算
+    for (i = 0; i < v.size(); i++) {
+        Ev[i] = v_mean[i];
+    }
+    for (j = 0; j < h.size(); j++) {
+        Eh[j] = h_mean[j];
+    }
+    for (i = 0; i < v.size(); i++) {
+        for (j = 0; j < h.size(); j++) {
+            Evh[i][j] = v_mean[i] * h_mean[j];
         }
     }
 }
@@ -604,12 +675,15 @@ void RBM::sampling_expectation(int num){
 void RBM::data_expectation(){
     int i, j, k;
     double lambda;
-    vector<double> sig_lambda;
-    sig_lambda.resize(traindatanum);
+    vector<vector<double>> sig_lambda;
+    sig_lambda.resize(traindatanum, vector<double>(h.size(), 0.0));
+
+    Ev_data.resize(v.size(), 0.0);
+    Eh_data.resize(h.size(), 0.0);
+    Evh_data.resize(v.size(), vector<double>(h.size(), 0.0));
 
     for(i=0;i<v.size();i++){
         // v_iのデータ平均を求める処理
-        Ev_data[i] = 0;
         for(k=0;k<traindatanum;k++){
             Ev_data[i] += traindata[k][i];
         }
@@ -617,23 +691,21 @@ void RBM::data_expectation(){
     }
     for(j=0;j<h.size();j++){
         // h_iのデータ平均を求める処理
-        Eh_data[j] = 0;
         for(k=0;k<traindatanum;k++){
             // lambdaを計算する
             lambda = c[j];
             for(i=0;i<v.size();i++){
                 lambda += W[i][j]*traindata[k][i];
             }
-            sig_lambda[k] = sig(lambda);
-            Eh_data[j] += sig_lambda[k];
+            sig_lambda[k][j] = sig(lambda);
+            Eh_data[j] += sig_lambda[k][j];
         }
         Eh_data[j] /= traindatanum;
 
         for(i=0;i<v.size();i++){
             // vhのデータ平均を求める処理
-            Evh_data[i][j] = 0;
             for(k=0;k<traindatanum;k++){
-                Evh_data[i][j] += traindata[k][i]*sig_lambda[k];
+                Evh_data[i][j] += traindata[k][i]*sig_lambda[k][j];
             }
             Evh_data[i][j] /= traindatanum;
         }

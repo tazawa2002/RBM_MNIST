@@ -7,6 +7,7 @@ void RBM_MNIST::dataGen_MNIST(int num, int number){
     FILE *datafile;
 
     // バーンイン時間
+    update_h();
     for(i=0;i<10000;i++){
         update_v();
         update_h();
@@ -39,6 +40,7 @@ void RBM_MNIST::dataGen_MNIST2(int num, int number){
     FILE *datafile;
 
     // バーンイン時間
+    update_h();
     for(i=0;i<0;i++){
         update_v();
         update_h();
@@ -46,12 +48,12 @@ void RBM_MNIST::dataGen_MNIST2(int num, int number){
 
     // データ生成のループ
     for(k=0;k<num;k++){
-        for(j=0;j<10;j++){
+        for(j=0;j<100;j++){
             update_v();
             update_h();
         }
 
-        snprintf(filename, sizeof(filename), "./data/image%3d-%d.dat", number, k);
+        snprintf(filename, sizeof(filename), "./data/image%d-%d.dat", number, k);
         datafile = fopen(filename, "w");
         for(i=0;i<v.size();i++){
             fprintf(datafile, "%d ", v[i]);
@@ -82,9 +84,6 @@ void RBM_MNIST::dataRead_MNIST(int num, int number){
         }
     }
     fclose(datafile);
-    for(i=0;i<v.size();i++){
-        v[i] = traindata[0][i];
-    }
 }
 
 void RBM_MNIST::paramOutput_MNIST(int number){
@@ -178,5 +177,12 @@ void RBM_MNIST::paramOutput_IMAGE(int number, int num){
         fclose(datafile);
         printf("\rmake %s", filename);
         fflush(stdout);
+    }
+}
+
+void RBM_MNIST::setV_random(){
+    int i;
+    for(i=0;i<v.size();i++){
+        v[i] = (random_num()<0.5) ? 0 : 1;
     }
 }

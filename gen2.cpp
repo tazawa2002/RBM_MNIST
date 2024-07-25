@@ -13,7 +13,9 @@ int main(int argc, char *argv[]){
 
     rbm.paramInput_MNIST(10);
 
+    rbm.dataRead_MNIST(100, number);
     for(number=0;number<100;number++){
+        rbm.setV_random();
         rbm.dataGen_MNIST2(num, number);
     }
     

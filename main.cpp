@@ -4,8 +4,8 @@
 int main(int argc, char *argv[]){
     int v_num = 28*28;
     int h_num = 600;
-    int epoch = 20;
-    int sampling_num = 10;
+    int epoch = 10;
+    int sampling_num = 200;
     int number;
     RBM_MNIST rbm(v_num, h_num);
     rbm.setAnimeteType(RBM::AnimeteType::none);

@@ -12,6 +12,7 @@ public:
     void paramOutput_MNIST(int number);
     void paramInput_MNIST(int number);
     void paramOutput_IMAGE(int number, int num);
+    void setV_random();
 };
 
 #endif
